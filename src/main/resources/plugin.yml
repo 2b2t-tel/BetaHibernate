@@ -1,0 +1,7 @@
+name: BetaHibernate
+version: '${project.version}'
+main: net.utils.betahibernate.BetaHibernate
+commands:
+  betahibernate:
+    description: Reloads the BetaHibernate config
+    usage: /<command> reload
