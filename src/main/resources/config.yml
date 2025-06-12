@@ -1,0 +1,6 @@
+chunk-range: 5
+cleanup-interval-seconds: 5
+unload-chunks: true
+remove-monsters: true
+remove-animals: true
+remove-items: true

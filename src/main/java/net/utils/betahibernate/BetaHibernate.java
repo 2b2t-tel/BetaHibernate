@@ -18,7 +18,7 @@ public class BetaHibernate extends JavaPlugin {
     private boolean removeAnimals = true;
     private boolean removeItems = true;
 
-    private final File configFile = new File(getDataFolder(), "config.properties");
+    private final File configFile = new File(getDataFolder(), "config.yml");
 
     @Override
     public void onEnable() {
@@ -39,25 +39,37 @@ public class BetaHibernate extends JavaPlugin {
     }
 
     private void loadSettings() {
-        if (!getDataFolder().exists()) getDataFolder().mkdirs();
-
-        Properties props = new Properties();
-
         try {
-            if (!configFile.exists()) {
-                OutputStream out = new FileOutputStream(configFile);
-                props.setProperty("chunk-range", "5");
-                props.setProperty("cleanup-interval-seconds", "5");
-                props.setProperty("unload-chunks", "true");
-                props.setProperty("remove-monsters", "true");
-                props.setProperty("remove-animals", "true");
-                props.setProperty("remove-items", "true");
-                props.store(out, "BetaHibernate Configuration");
-                out.close();
-                System.out.println("[BetaHibernate] Created default config.");
+            // Ensure plugin data folder exists
+            File folder = getDataFolder();
+            if (!folder.exists()) {
+                if (folder.mkdirs()) {
+                    System.out.println("[BetaHibernate] Created plugin data folder.");
+                } else {
+                    System.out.println("[BetaHibernate] Failed to create data folder!");
+                }
             }
 
-            InputStream in = new FileInputStream(configFile);
+            // Create default config if missing
+            if (!configFile.exists()) {
+                Properties defaultProps = new Properties();
+                defaultProps.setProperty("chunk-range", "5");
+                defaultProps.setProperty("cleanup-interval-seconds", "5");
+                defaultProps.setProperty("unload-chunks", "true");
+                defaultProps.setProperty("remove-monsters", "true");
+                defaultProps.setProperty("remove-animals", "true");
+                defaultProps.setProperty("remove-items", "true");
+
+                FileOutputStream out = new FileOutputStream(configFile);
+                defaultProps.store(out, "BetaHibernate Configuration");
+                out.flush();
+                out.close();
+                System.out.println("[BetaHibernate] Created default config.yml");
+            }
+
+            // Load config values
+            Properties props = new Properties();
+            FileInputStream in = new FileInputStream(configFile);
             props.load(in);
             in.close();
 
@@ -68,7 +80,7 @@ public class BetaHibernate extends JavaPlugin {
             removeAnimals = Boolean.parseBoolean(props.getProperty("remove-animals", "true"));
             removeItems = Boolean.parseBoolean(props.getProperty("remove-items", "true"));
 
-            System.out.println("[BetaHibernate] Settings reloaded:");
+            System.out.println("[BetaHibernate] Settings loaded:");
             System.out.println("  chunkRange = " + chunkRange);
             System.out.println("  interval = " + cleanupIntervalTicks + " ticks");
             System.out.println("  unloadChunks = " + unloadChunks);
@@ -77,9 +89,10 @@ public class BetaHibernate extends JavaPlugin {
             System.out.println("  removeItems = " + removeItems);
 
         } catch (Exception e) {
-            System.out.println("[BetaHibernate] Failed to load config: " + e.getMessage());
+            System.out.println("[BetaHibernate] Error loading config: " + e.getMessage());
         }
     }
+
 
     private void hibernateWorlds() {
         for (World world : Bukkit.getWorlds()) {
